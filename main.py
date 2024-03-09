@@ -2,13 +2,28 @@ import customtkinter as ctk
 import requests
 import re
 import sys
-import os
+import pathlib as path
 import csv
+import requests
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
+
 class LoadAPI:
+    @staticmethod
+    def update_check(csv, api_update):
+        with open(f"{csv}.csv", "r") as data_file:
+            is_content = csv.DictReader(data_file)
+            check_content = csv.reader(data_file)
+            if data_file and any(is_content):
+                if check_content == api_update:
+                    return True
+                else: 
+                    return False
+            else:
+                return False
+
     def __init__(self, app, sidebar, main_pages, events, reload):
         self.app = app
         self.sidebar = sidebar
@@ -16,27 +31,44 @@ class LoadAPI:
         self.events = events
         self.reload = reload
 
+        self.csv_exist = False
         self.csv_status = False
         self.api_status = False
-        prime_part_list = {}
-        relic_list = {}
-        
 
-    def load_api(self, request_name):
-        if os.path.exists(f"{request_name}.csv"):
-            self.csv_status = True
-            pass
+    def load_api(self):
+        raw_json_file = "raw_json.csv"
+        try:
+            response = requests.get("https://api.warframe.market/v1/items")
+            raw = response.json()
+        except requests.RequestException:
+            sys.exit(1)
+
+        if LoadAPI.update_check(raw_json_file, raw):
+            item_names = [item["url_name"] for item in raw["payload"]["items"]]
+            for item in item_names:
+                if re.match(r".+(?<!kavasa_)prime_(?!set$).+$", item):
+                    ...
+                elif re.match(r"^(?<!requiem_)[^r].+_relic$", item):
+                    ... 
+                    
+            self.api_status = True
+            
         else:
-            if request_name == "relic":
-                try:
-                    response = requests.get("https://api.warframe.market/v1/items")
-                    item_list = response.json()
-                    item_names = [item["item_name"] for item in item_list["payload"]["items"]]
-                    self.api_status = True
-                except requests.RequestException:
-                    sys.exit(1)
-        
-    def load_relic(self, relic):
+            writer = csv.writer(raw_json_file)
+            for row in raw:
+                writer.writerow(row)
+
+            item_names = [item["url_name"] for item in raw["payload"]["items"]]
+            for item in item_names:
+                if re.match(r".+(?<!kavasa_)prime_(?!set$).+$", item):
+                    ...
+                elif re.match(r"^(?<!requiem_)[^r].+_relic$", item):
+                    ... 
+                    
+            self.api_status = True 
+
+
+    def load_relic(self):
         ...
     
     def load_pages(self, item_name):
