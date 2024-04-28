@@ -8,7 +8,7 @@ from pymongo import UpdateOne, InsertOne
 import time
 
 class Initialize_Database():
-    def __init__(self, client=MongoClient("mongodb+srv://myAtlasDBUser:19-91Minutes@atlascluster.kcbmbec.mongodb.net/")):
+    def __init__(self, client=MongoClient("mongodb://localhost:27017/")):
         self.client = client
         self.db = self.client["optimized_db"]
         self.prime_sets_collection = self.db["t_ps"]
